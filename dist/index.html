@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>eGFR Calculator</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+        }
+        .container {
+          max-width: 400px;
+          margin: 0 auto;
+        }
+        .form-group {
+          margin-bottom: 15px;
+        }
+        label {
+          display: block;
+          margin-bottom: 5px;
+        }
+        input, select {
+          width: 100%;
+          padding: 8px;
+          box-sizing: border-box;
+        }
+        button {
+          width: 100%;
+          padding: 10px;
+          background-color: #007bff;
+          color: white;
+          border: none;
+          cursor: pointer;
+        }
+        button:hover {
+          background-color: #0056b3;
+        }
+        .result {
+          margin-top: 20px;
+          padding: 10px;
+          background-color: #f8f9fa;
+          border: 1px solid #ddd;
+        }
+        .stage {
+          margin-top: 10px;
+          padding: 10px;
+          font-weight: bold;
+        }
+        .stage-1 { background-color: #d4edda; color: #155724; }
+        .stage-2 { background-color: #fff3cd; color: #856404; }
+        .stage-3a { background-color: #ffeeba; color: #856404; }
+        .stage-3b { background-color: #f8d7da; color: #721c24; }
+        .stage-4 { background-color: #f5c6cb; color: #721c24; }
+        .stage-5 { background-color: #dc3545; color: white; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>eGFR Calculator</h1>
+        <div class="form-group">
+          <label for="age">Age (years):</label>
+          <input type="number" id="age" min="18" max="120" required>
+        </div>
+        <div class="form-group">
+          <label for="creatinine">Serum Creatinine:</label>
+          <input type="number" id="creatinine" step="0.01" min="0.1" required>
+        </div>
+        <div class="form-group">
+          <label for="unit">Creatinine Unit:</label>
+          <select id="unit" required>
+            <option value="mg/dL">mg/dL</option>
+            <option value="μmol/L">μmol/L</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="gender">Gender:</label>
+          <select id="gender" required>
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="race">Race:</label>
+          <select id="race" required>
+            <option value="non-black">Non-Black</option>
+            <option value="black">Black</option>
+          </select>
+        </div>
+        <button onclick="calculateEGFR()">Calculate eGFR</button>
+        <div class="result" id="result"></div>
+        <div class="stage" id="stage"></div>
+      </div>
+      <script>
+        function calculateEGFR() {
+          const age = parseFloat(document.getElementById('age').value);
+          let creatinine = parseFloat(document.getElementById('creatinine').value);
+          const unit = document.getElementById('unit').value;
+          const gender = document.getElementById('gender').value;
+          const race = document.getElementById('race').value;
+
+          // Convert μmol/L to mg/dL if needed
+          if (unit === 'μmol/L') {
+            creatinine = creatinine / 88.4;
+          }
+
+          let k = gender === 'female' ? 0.7 : 0.9;
+          let a = gender === 'female' ? -0.329 : -0.411;
+          let raceFactor = race === 'black' ? 1.159 : 1;
+
+          let egfr = 141 * Math.min(Math.pow(creatinine / k, a), 1) * Math.pow(Math.max(creatinine / k, 1), -1.209) * Math.pow(0.993, age) * raceFactor;
+
+          document.getElementById('result').innerHTML = `eGFR: ${egfr.toFixed(2)} mL/min/1.73m²`;
+
+          // Determine CKD stage
+          let stageText = '';
+          let stageClass = '';
+          if (egfr >= 90) {
+            stageText = 'Stage 1: Normal or high kidney function';
+            stageClass = 'stage-1';
+          } else if (egfr >= 60) {
+            stageText = 'Stage 2: Mildly reduced kidney function';
+            stageClass = 'stage-2';
+          } else if (egfr >= 45) {
+            stageText = 'Stage 3a: Mild to moderate reduction in kidney function';
+            stageClass = 'stage-3a';
+          } else if (egfr >= 30) {
+            stageText = 'Stage 3b: Moderate to severe reduction in kidney function';
+            stageClass = 'stage-3b';
+          } else if (egfr >= 15) {
+            stageText = 'Stage 4: Severely reduced kidney function';
+            stageClass = 'stage-4';
+          } else {
+            stageText = 'Stage 5: Kidney failure';
+            stageClass = 'stage-5';
+          }
+
+          const stageElement = document.getElementById('stage');
+          stageElement.className = `stage ${stageClass}`;
+          stageElement.innerHTML = stageText;
+        }
+      </script>
+    </body>
+    </html>

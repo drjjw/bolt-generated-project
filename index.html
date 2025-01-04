@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>eGFR Calculator</title>
+      <link href="./src/index.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">eGFR Calculator</h1>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Age (years):</label>
+            <input type="number" id="age" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" min="18" max="120" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Serum Creatinine:</label>
+            <input type="number" id="creatinine" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" step="0.01" min="0.1" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Creatinine Unit:</label>
+            <select id="unit" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <option value="mg/dL">mg/dL</option>
+              <option value="μmol/L">μmol/L</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Gender:</label>
+            <select id="gender" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Race:</label>
+            <select id="race" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+              <option value="non-black">Non-Black</option>
+              <option value="black">Black</option>
+            </select>
+          </div>
+          <button onclick="calculateEGFR()" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Calculate eGFR
+          </button>
+        </div>
+        <div id="result" class="mt-6 p-4 bg-gray-50 rounded-md text-center text-gray-700"></div>
+        <div id="stage" class="mt-4 p-4 rounded-md text-center font-semibold"></div>
+        <div id="stage-details" class="mt-4 space-y-2"></div>
+      </div>
+      <script>
+        const stageDetails = {
+          1: {
+            title: 'Stage 1: Normal or High Kidney Function',
+            description: 'Your kidneys are functioning normally, but there may be signs of kidney damage (e.g., protein in urine).',
+            symptoms: 'Usually no symptoms.',
+            risks: 'High blood pressure, diabetes, or family history of kidney disease.',
+            recommendations: 'Monitor kidney health regularly, maintain a healthy lifestyle, and control blood pressure and blood sugar levels.'
+          },
+          2: {
+            title: 'Stage 2: Mildly Reduced Kidney Function',
+            description: 'Your kidneys are functioning slightly below normal, with mild damage.',
+            symptoms: 'Usually no symptoms.',
+            risks: 'Progression to more severe stages if not managed.',
+            recommendations: 'Regular check-ups, healthy diet, exercise, and control of blood pressure and blood sugar.'
+          },
+          3a: {
+            title: 'Stage 3a: Mild to Moderate Reduction in Kidney Function',
+            description: 'Your kidneys are functioning moderately below normal.',
+            symptoms: 'Fatigue, swelling in hands/feet, changes in urination.',
+            risks: 'Increased risk of cardiovascular disease.',
+            recommendations: 'Consult a nephrologist, reduce salt intake, and monitor kidney function regularly.'
+          },
+          3b: {
+            title: 'Stage 3b: Moderate to Severe Reduction in Kidney Function',
+            description: 'Your kidneys are functioning significantly below normal.',
+            symptoms: 'Fatigue, swelling, back pain, changes in urination.',
+            risks: 'High risk of complications like anemia and bone disease.',
+            recommendations: 'Strict diet control, regular medical follow-ups, and possible medication adjustments.'
+          },
+          4: {
+            title: 'Stage 4: Severely Reduced Kidney Function',
+            description: 'Your kidneys are functioning very poorly, and you are close to kidney failure.',
+            symptoms: 'Fatigue, nausea, swelling, shortness of breath.',
+            risks: 'High risk of kidney failure and severe complications.',
+            recommendations: 'Prepare for dialysis or kidney transplant, follow a strict renal diet, and consult a nephrologist.'
+          },
+          5: {
+            title: 'Stage 5: Kidney Failure',
+            description: 'Your kidneys have failed or are close to failing.',
+            symptoms: 'Severe fatigue, nausea, vomiting, swelling, difficulty breathing.',
+            risks: 'Life-threatening complications without treatment.',
+            recommendations: 'Immediate dialysis or kidney transplant, strict adherence to medical advice.'
+          }
+        };
+
+        function calculateEGFR() {
+          const age = parseFloat(document.getElementById('age').value);
+          let creatinine = parseFloat(document.getElementById('creatinine').value);
+          const unit = document.getElementById('unit').value;
+          const gender = document.getElementById('gender').value;
+          const race = document.getElementById('race').value;
+
+          // Convert μmol/L to mg/dL if needed
+          if (unit === 'μmol/L') {
+            creatinine = creatinine / 88.4;
+          }
+
+          let k = gender === 'female' ? 0.7 : 0.9;
+          let a = gender === 'female' ? -0.329 : -0.411;
+          let raceFactor = race === 'black' ? 1.159 : 1;
+
+          let egfr = 141 * Math.min(Math.pow(creatinine / k, a), 1) * Math.pow(Math.max(creatinine / k, 1), -1.209) * Math.pow(0.993, age) * raceFactor;
+
+          document.getElementById('result').innerHTML = `eGFR: ${egfr.toFixed(2)} mL/min/1.73m²`;
+
+          // Determine CKD stage
+          let stageKey = '';
+          let stageClass = '';
+          if (egfr >= 90) {
+            stageKey = '1';
+            stageClass = 'bg-green-100 text-green-800';
+          } else if (egfr >= 60) {
+            stageKey = '2';
+            stageClass = 'bg-yellow-100 text-yellow-800';
+          } else if (egfr >= 45) {
+            stageKey = '3a';
+            stageClass = 'bg-orange-100 text-orange-800';
+          } else if (egfr >= 30) {
+            stageKey = '3b';
+            stageClass = 'bg-red-100 text-red-800';
+          } else if (egfr >= 15) {
+            stageKey = '4';
+            stageClass = 'bg-red-200 text-red-900';
+          } else {
+            stageKey = '5';
+            stageClass = 'bg-red-500 text-white';
+          }
+
+          const stageElement = document.getElementById('stage');
+          stageElement.className = `mt-4 p-4 rounded-md text-center font-semibold ${stageClass}`;
+          stageElement.innerHTML = stageDetails[stageKey].title;
+
+          const detailsElement = document.getElementById('stage-details');
+          detailsElement.innerHTML = `
+            <div class="bg-gray-50 p-4 rounded-md">
+              <p class="text-gray-700"><b>Description:</b> ${stageDetails[stageKey].description}</p>
+              <p class="text-gray-700 mt-2"><b>Symptoms:</b> ${stageDetails[stageKey].symptoms}</p>
+              <p class="text-gray-700 mt-2"><b>Risks:</b> ${stageDetails[stageKey].risks}</p>
+              <p class="text-gray-700 mt-2"><b>Recommendations:</b> ${stageDetails[stageKey].recommendations}</p>
+            </div>
+          `;
+        }
+      </script>
+    </body>
+    </html>
