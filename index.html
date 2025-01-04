@@ -39,60 +39,13 @@
               <option value="black">Black</option>
             </select>
           </div>
-          <button onclick="calculateEGFR()" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <button id="calculate-btn" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
             Calculate eGFR
           </button>
         </div>
         <div id="result" class="mt-6 p-4 bg-gray-50 rounded-md text-center text-gray-700"></div>
-        <div id="stage" class="mt-4 p-4 rounded-md text-center font-semibold"></div>
-        <div id="stage-details" class="mt-4 space-y-2"></div>
       </div>
       <script>
-        const stageDetails = {
-          1: {
-            title: 'Stage 1: Normal or High Kidney Function',
-            description: 'Your kidneys are functioning normally, but there may be signs of kidney damage (e.g., protein in urine).',
-            symptoms: 'Usually no symptoms.',
-            risks: 'High blood pressure, diabetes, or family history of kidney disease.',
-            recommendations: 'Monitor kidney health regularly, maintain a healthy lifestyle, and control blood pressure and blood sugar levels.'
-          },
-          2: {
-            title: 'Stage 2: Mildly Reduced Kidney Function',
-            description: 'Your kidneys are functioning slightly below normal, with mild damage.',
-            symptoms: 'Usually no symptoms.',
-            risks: 'Progression to more severe stages if not managed.',
-            recommendations: 'Regular check-ups, healthy diet, exercise, and control of blood pressure and blood sugar.'
-          },
-          3a: {
-            title: 'Stage 3a: Mild to Moderate Reduction in Kidney Function',
-            description: 'Your kidneys are functioning moderately below normal.',
-            symptoms: 'Fatigue, swelling in hands/feet, changes in urination.',
-            risks: 'Increased risk of cardiovascular disease.',
-            recommendations: 'Consult a nephrologist, reduce salt intake, and monitor kidney function regularly.'
-          },
-          3b: {
-            title: 'Stage 3b: Moderate to Severe Reduction in Kidney Function',
-            description: 'Your kidneys are functioning significantly below normal.',
-            symptoms: 'Fatigue, swelling, back pain, changes in urination.',
-            risks: 'High risk of complications like anemia and bone disease.',
-            recommendations: 'Strict diet control, regular medical follow-ups, and possible medication adjustments.'
-          },
-          4: {
-            title: 'Stage 4: Severely Reduced Kidney Function',
-            description: 'Your kidneys are functioning very poorly, and you are close to kidney failure.',
-            symptoms: 'Fatigue, nausea, swelling, shortness of breath.',
-            risks: 'High risk of kidney failure and severe complications.',
-            recommendations: 'Prepare for dialysis or kidney transplant, follow a strict renal diet, and consult a nephrologist.'
-          },
-          5: {
-            title: 'Stage 5: Kidney Failure',
-            description: 'Your kidneys have failed or are close to failing.',
-            symptoms: 'Severe fatigue, nausea, vomiting, swelling, difficulty breathing.',
-            risks: 'Life-threatening complications without treatment.',
-            recommendations: 'Immediate dialysis or kidney transplant, strict adherence to medical advice.'
-          }
-        };
-
         function calculateEGFR() {
           const age = parseFloat(document.getElementById('age').value);
           let creatinine = parseFloat(document.getElementById('creatinine').value);
@@ -112,44 +65,10 @@
           let egfr = 141 * Math.min(Math.pow(creatinine / k, a), 1) * Math.pow(Math.max(creatinine / k, 1), -1.209) * Math.pow(0.993, age) * raceFactor;
 
           document.getElementById('result').innerHTML = `eGFR: ${egfr.toFixed(2)} mL/min/1.73m²`;
-
-          // Determine CKD stage
-          let stageKey = '';
-          let stageClass = '';
-          if (egfr >= 90) {
-            stageKey = '1';
-            stageClass = 'bg-green-100 text-green-800';
-          } else if (egfr >= 60) {
-            stageKey = '2';
-            stageClass = 'bg-yellow-100 text-yellow-800';
-          } else if (egfr >= 45) {
-            stageKey = '3a';
-            stageClass = 'bg-orange-100 text-orange-800';
-          } else if (egfr >= 30) {
-            stageKey = '3b';
-            stageClass = 'bg-red-100 text-red-800';
-          } else if (egfr >= 15) {
-            stageKey = '4';
-            stageClass = 'bg-red-200 text-red-900';
-          } else {
-            stageKey = '5';
-            stageClass = 'bg-red-500 text-white';
-          }
-
-          const stageElement = document.getElementById('stage');
-          stageElement.className = `mt-4 p-4 rounded-md text-center font-semibold ${stageClass}`;
-          stageElement.innerHTML = stageDetails[stageKey].title;
-
-          const detailsElement = document.getElementById('stage-details');
-          detailsElement.innerHTML = `
-            <div class="bg-gray-50 p-4 rounded-md">
-              <p class="text-gray-700"><b>Description:</b> ${stageDetails[stageKey].description}</p>
-              <p class="text-gray-700 mt-2"><b>Symptoms:</b> ${stageDetails[stageKey].symptoms}</p>
-              <p class="text-gray-700 mt-2"><b>Risks:</b> ${stageDetails[stageKey].risks}</p>
-              <p class="text-gray-700 mt-2"><b>Recommendations:</b> ${stageDetails[stageKey].recommendations}</p>
-            </div>
-          `;
         }
+
+        // Attach the function to the button
+        document.getElementById('calculate-btn').addEventListener('click', calculateEGFR);
       </script>
     </body>
     </html>
